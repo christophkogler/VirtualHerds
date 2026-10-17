@@ -32,6 +32,7 @@ static class Program
         var noFood = HerdMath.AllocateFairNutrition(new[] { 10f, 20f }, 0f);
         Assert(noFood[0] == 0f && noFood[1] == 0f, "zero nutrition allocation");
         CheckBoostCosts();
+        CheckRuntimeTuning();
         System.Console.WriteLine("Virtual Herds pure self-tests passed.");
     }
 
@@ -64,6 +65,73 @@ static class Program
         Assert(Math.Abs(digital / ordinary - 10f) < 0.0001f, "digitization pays exactly ten times electrical load");
         Assert(BoostMath.LoadWatts(5, 20f, 2f, 3f, 4f, false) == 2f * BoostMath.LoadWatts(5, 10f, 2f, 3f, 4f, false), "operating costs scale with herd demand");
         Assert(BoostMath.LoadWatts(5, 10f, 3f, 1f, 1f, false) > BoostMath.LoadWatts(5, 10f, 2f, 1f, 1f, false), "higher requested boosts cost more power");
+    }
+
+    private static void CheckRuntimeTuning()
+    {
+        var defaults = new BalanceTuning();
+        Assert(BalanceTuning.Options.Select(o => o.Key).Distinct().Count() == BalanceTuning.Options.Count, "unique settings persistence keys");
+        foreach (var option in BalanceTuning.Options)
+        {
+            Assert(option.Default >= option.Min && option.Default <= option.Max, "default in range: " + option.Key);
+            var invalid = new BalanceTuning(new Dictionary<string, float> { [option.Key] = float.NaN });
+            Assert(invalid[option.Key] == option.Default, "NaN reset: " + option.Key);
+            invalid[option.Key] = float.PositiveInfinity;
+            Assert(invalid[option.Key] == option.Default, "infinite reset: " + option.Key);
+            invalid[option.Key] = -100000;
+            Assert(invalid[option.Key] == option.Min, "lower bound: " + option.Key);
+            invalid[option.Key] = float.MaxValue;
+            Assert(invalid[option.Key] == option.Max, "upper bound: " + option.Key);
+        }
+        var tuning = defaults.Clone();
+        BalanceTuning.Current = tuning;
+        Assert(BoostMath.BaselineNutrition(2, 0.5f) == 1.6f, "default hunger conversion");
+        tuning["baselineHunger"] = 3.2f;
+        Assert(BoostMath.BaselineNutrition(2, 0.5f) == 3.2f, "baseline hunger conversion independently tunable");
+        Assert(BoostMath.BaselineNutrition(0, 1) == 0.01f, "nutrition numerical floor retained");
+        tuning["baselineHunger"] = 1.6f;
+        tuning["nutrition"] = 0.5f;
+        Assert(BoostMath.NutritionFactor(1, 1, 1, 1, false) == 0.5f, "feed scale affects baseline feeding");
+        Assert(BoostMath.LoadWatts(1, 10, 1, 1, 1, false) == 500f, "feed tuning independent of power");
+        tuning["activePower"] = 2;
+        tuning["energy1"] = 80;
+        tuning["idlePower"] = 3;
+        Assert(BoostMath.LoadWatts(1, 10, 1, 1, 1, false) == 1600f, "tier and global active power");
+        Assert(BoostMath.IdleWatts(1) == 300f && BoostMath.IdleWatts(0) == 0, "idle scale preserves unpowered tier");
+        tuning["cap1"] = 200;
+        Assert(BoostMath.Combine(100, 100, 100, 1) == 200, "configurable caps above former ceiling");
+        tuning["cap1"] = 2;
+        Assert(BoostMath.Sanitize(100) == 100 && BoostMath.Combine(100, 1, 1, 1) == 2, "effective cap does not erase saved requests");
+        tuning["severityLinear"] = 2; tuning["severityQuadratic"] = 0.5f;
+        Assert(BoostMath.Severity(2, 3, 1) == 10.5f, "custom linear and quadratic coefficients");
+        tuning["digitalPower"] = 4; tuning["digitalFeed"] = 0.25f;
+        Assert(BoostMath.DigitalMultiplier(5, true) == 4 && BoostMath.DigitalMultiplier(4, true) == 1, "custom digitization remains tier gated");
+        Assert(BoostMath.NutritionFactor(5, 1, 1, 1, true) == 0.125f, "digitization feed fraction and feed scale");
+        tuning["production"] = 3; tuning["milk"] = 2;
+        Assert(BoostMath.ProductScale("milk") == 6 && BoostMath.ProductScale("wool") == 3, "global and product-specific yields combine");
+        tuning["mortality"] = 0; Assert(BoostMath.MortalityFraction(30, 10) == 0, "mortality disabled");
+        tuning["mortality"] = 0.5f; tuning["mortalityOnset"] = 1.5f;
+        Assert(BoostMath.MortalityFraction(10, 10) == 0 && BoostMath.MortalityFraction(20, 10) == 0.25f, "mortality onset and coefficient");
+        Assert(BoostMath.MortalityFraction(1000, 10) == 1, "mortality bounded");
+        var restored = new BalanceTuning(tuning.Export());
+        Assert(restored["production"] == 3 && restored["cap1"] == 2, "settings exported and restored");
+        tuning.Reset("Power");
+        Assert(tuning["activePower"] == 1 && tuning["production"] == 3, "section reset leaves other sections intact");
+        tuning.Reset();
+        Assert(BalanceTuning.Options.All(o => tuning[o.Key] == o.Default), "full defaults restored");
+        Assert(BalanceTuning.ScaledCount(350, 0.5f) == 175 && BalanceTuning.ScaledCount(3, 0.1f) == 1 && BalanceTuning.ScaledCount(20, 0) == 0, "material scaling rounds up and supports free construction");
+
+        // Two cohorts with unequal count/diet/boosts: nutrition-weighted cost average reconciles exactly.
+        float a = 20, b = 5;
+        float sa = 1 + BoostMath.Severity(2, 1, 1), sb = 1 + BoostMath.Severity(1, 3, 1);
+        var power = new PowerCostBreakdown { AnimalCount = 15, BaselineNutrition = a + b, TierCoefficient = BoostMath.EnergyCoefficient(5), ActiveScale = 1, IdleScale = 1, ControllerIdleBase = 15000, BoostMultiplier = (a * sa + b * sb) / (a + b), DigitalMultiplier = 10, SecondaryIdleWatts = 100 };
+        float expected = (15000 + BoostMath.LoadWatts(5, a, 2, 1, 1, false) + BoostMath.LoadWatts(5, b, 1, 3, 1, false)) * 10;
+        Assert(Math.Abs(power.ControllerWatts - expected) < 0.1f && power.TotalWatts == power.ControllerWatts + 100, "breakdown weighted average matches actual cohort costs and includes secondary idle");
+        Assert(new PowerCostBreakdown().AverageNutrition == 0, "empty herd breakdown has no division by zero");
+        float hugeRemainder = 0;
+        Assert(HerdMath.ConsumeWhole(ref hugeRemainder, 1e30f) == int.MaxValue && hugeRemainder == 0, "extreme configured output cannot overflow into negatives");
+        Assert(HerdMath.AddCounts(int.MaxValue, 10) == int.MaxValue, "count buffers saturate rather than wrap");
+        BalanceTuning.Current = new BalanceTuning();
     }
 
     private static void Assert(bool condition, string message)

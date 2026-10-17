@@ -8,6 +8,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\VirtualHerds\Pure\HerdMath.cs" Link="Pure\HerdMath.cs" />
+    <Compile Include="..\VirtualHerds\Pure\BalanceTuning.cs" Link="Pure\BalanceTuning.cs" />
     <Compile Include="..\VirtualHerds\Pure\BoostMath.cs" Link="Pure\BoostMath.cs" />
   </ItemGroup>
 </Project>

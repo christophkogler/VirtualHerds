@@ -39,8 +39,8 @@ namespace VirtualHerds
             var listing = new Listing_Standard();
             listing.Begin(reserveRect);
             var reserve = component.ReserveDays;
-            listing.Label("Pooled food reserve (herd-days; refills below 80%): " + reserve.ToString("0.0"));
-            reserve = listing.Slider(reserve, 0f, 30f);
+            listing.Label("Map reserve days (refill at " + BalanceTuning.Current["refillThreshold"].ToString("P0") + "; global scale ×" + BalanceTuning.Current["reserveScale"].ToString("0.##") + "): " + reserve.ToString("0.0"));
+            reserve = listing.Slider(reserve, 0f, 365f);
             if (Mathf.Abs(reserve - component.ReserveDays) > 0.0001f)
                 component.SetReserveDays(reserve);
             listing.End();
@@ -72,7 +72,7 @@ namespace VirtualHerds
             const int segments = 5;
             var stored = component.FoodNutrition;
             var target = component.RequiredReserveNutrition;
-            var dailyNeed = component.ReserveDays > 0f ? target / component.ReserveDays : 0f;
+            var dailyNeed = component.Cohorts.Sum(component.DailyNutritionFor);
             var days = dailyNeed > 0f ? stored / dailyNeed : 0f;
             var tip = "Nutrition in storage: " + stored.ToString("0.##") + " / " + target.ToString("0.##") + " nutrition (target)\n" +
                       "About " + days.ToString("0.0") + " days of nutrition in storage; each segment represents 1 day.";
@@ -161,11 +161,11 @@ namespace VirtualHerds
                 var boost = component.EffectiveBoosts(cohort).output;
                 var milk = VirtualHerdUtility.Milkable(def);
                 if (milk != null && (!milk.milkFemaleOnly || cohort.Sex == HerdSex.Female))
-                    AddDailyOutput(output, milk.milkDef, boost * cohort.count * milk.milkAmount / Math.Max(1f / 24f, milk.milkIntervalDays));
+                    AddDailyOutput(output, milk.milkDef, BoostMath.ProductScale("milk") * boost * cohort.count * milk.milkAmount / Math.Max(1f / 24f, milk.milkIntervalDays));
 
                 var wool = VirtualHerdUtility.Shearable(def);
                 if (wool != null)
-                    AddDailyOutput(output, wool.woolDef, boost * cohort.count * wool.woolAmount / Math.Max(1f / 24f, wool.shearIntervalDays));
+                    AddDailyOutput(output, wool.woolDef, BoostMath.ProductScale("wool") * boost * cohort.count * wool.woolAmount / Math.Max(1f / 24f, wool.shearIntervalDays));
 
                 var eggs = VirtualHerdUtility.EggLayer(def);
                 if (eggs != null && (!eggs.eggLayFemaleOnly || cohort.Sex == HerdSex.Female))
@@ -177,7 +177,7 @@ namespace VirtualHerds
                         ? eggs.eggFertilizedDef ?? eggs.eggUnfertilizedDef
                         : eggs.eggUnfertilizedDef;
                     AddDailyOutput(output, eggDef,
-                        boost * cohort.count * averageEggs / Math.Max(1f / 24f, eggs.eggLayIntervalDays));
+                        BoostMath.ProductScale("eggs") * boost * cohort.count * averageEggs / Math.Max(1f / 24f, eggs.eggLayIntervalDays));
                 }
             }
 

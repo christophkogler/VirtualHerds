@@ -39,7 +39,7 @@ namespace VirtualHerds
                     EndJobWith(JobCondition.Incompletable);
                     return;
                 }
-                pawn.skills?.Learn(SkillDefOf.Construction, 0.08f);
+                pawn.skills?.Learn(SkillDefOf.Construction, VirtualHerds.Pure.BalanceTuning.Current["upgradeXp"]);
                 if (Barn.WorkOnUpgrade(pawn.GetStatValue(StatDefOf.ConstructionSpeed)))
                     EndJobWith(JobCondition.Succeeded);
             };

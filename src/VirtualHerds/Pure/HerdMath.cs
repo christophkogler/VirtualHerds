@@ -123,12 +123,16 @@ namespace VirtualHerds.Pure
 
         public static int ConsumeWhole(ref float remainder, float expected)
         {
-            if (expected <= 0f) return 0;
-            remainder += expected;
-            var whole = (int)Math.Floor(remainder);
-            remainder -= whole;
+            if (expected <= 0f || float.IsNaN(expected)) return 0;
+            double total = Math.Max(0d, remainder) + (double)expected;
+            if (total >= int.MaxValue) { remainder = 0f; return int.MaxValue; }
+            var whole = (int)Math.Floor(total);
+            remainder = (float)(total - whole);
             return whole;
         }
+
+        public static int AddCounts(int left, int right)
+            => (int)Math.Min(int.MaxValue, Math.Max(0L, left) + Math.Max(0L, right));
 
         public static float[] AllocateFairNutrition(float[] demands, float available)
         {
