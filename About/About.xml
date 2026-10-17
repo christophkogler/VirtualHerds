@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ModMetaData>
+  <name>Virtual Herds</name>
+  <packageId>christoph.virtualherds</packageId>
+  <author>OpenAI Codex</author>
+  <description>Pool eligible player-owned livestock into map-wide virtual herds. Virtual Herds intentionally normalizes individual identity, health, surgery, genes, and lineage when animals enter storage.</description>
+  <supportedVersions>
+    <li>1.6</li>
+  </supportedVersions>
+  <modDependencies>
+    <li>
+      <packageId>brrainz.harmony</packageId>
+      <displayName>Harmony</displayName>
+      <steamWorkshopUrl>https://steamcommunity.com/sharedfiles/filedetails/?id=2009463077</steamWorkshopUrl>
+    </li>
+  </modDependencies>
+  <incompatibleWith>
+    <li>christoph.HerdCompression</li>
+  </incompatibleWith>
+</ModMetaData>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <WorkGiverDef>
+    <defName>VirtualHerds_HaulFood</defName>
+    <label>haul food to virtual herd barn</label>
+    <giverClass>VirtualHerds.WorkGiver_HaulVirtualHerdFood</giverClass>
+    <workType>Hauling</workType>
+    <verb>haul food</verb>
+    <gerund>hauling food</gerund>
+    <priorityInType>90</priorityInType>
+    <scanThings>true</scanThings>
+  </WorkGiverDef>
+</Defs>

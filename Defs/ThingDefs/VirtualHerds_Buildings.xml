@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Defs>
+  <ThingDef ParentName="BuildingBase">
+    <defName>VirtualHerds_Barn</defName>
+    <label>virtual herd barn</label>
+    <description>A basic unpowered barn that stores eligible player-owned livestock as map-wide virtual herds. Intake deliberately normalizes individual identity and state; inspect the barn for the warning and controls.</description>
+    <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
+    <graphicData>
+      <texPath>Things/Building/VirtualHerds_Barn</texPath>
+      <graphicClass>Graphic_Single</graphicClass>
+      <drawSize>(2,2)</drawSize>
+    </graphicData>
+    <size>(2,2)</size>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability>
+    <pathCost>50</pathCost>
+    <fillPercent>0.35</fillPercent>
+    <tickerType>Normal</tickerType>
+    <useHitPoints>true</useHitPoints>
+    <statBases>
+      <WorkToMake>2000</WorkToMake>
+      <MaxHitPoints>180</MaxHitPoints>
+      <Flammability>0.8</Flammability>
+    </statBases>
+    <costStuffCount>160</costStuffCount>
+    <stuffCategories>
+      <li>Metallic</li>
+      <li>Woody</li>
+      <li>Stony</li>
+    </stuffCategories>
+    <designationCategory>Misc</designationCategory>
+  </ThingDef>
+</Defs>

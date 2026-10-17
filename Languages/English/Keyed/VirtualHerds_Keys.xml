@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LanguageData>
+  <VirtualHerds.Warning>Intake normalizes health, surgery, genes, lineage, names, bonds, training, and individual state. Stored animals are cohorts, not hidden pawns.</VirtualHerds.Warning>
+  <VirtualHerds.Infinity>-1 means infinity.</VirtualHerds.Infinity>
+</LanguageData>
