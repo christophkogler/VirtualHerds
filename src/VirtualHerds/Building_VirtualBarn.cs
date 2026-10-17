@@ -3,6 +3,7 @@ using System.Linq;
 using System;
 using RimWorld;
 using Verse;
+using Verse.AI;
 
 namespace VirtualHerds
 {
@@ -81,6 +82,42 @@ namespace VirtualHerds
                 icon = TexCommand.ReleaseAnimals,
                 action = () => Map.GetComponent<VirtualHerdMapComponent>()?.ConfirmDiscardStoredAnimals()
             };
+        }
+
+        public override IEnumerable<FloatMenuOption> GetFloatMenuOptions(Pawn selPawn)
+        {
+            foreach (var option in base.GetFloatMenuOptions(selPawn))
+                yield return option;
+            if (selPawn?.Faction != Faction.OfPlayer || Faction != Faction.OfPlayer || !Spawned)
+                yield break;
+            string reason = null;
+            if (selPawn.Drafted)
+                reason = "pawn is drafted";
+            else if (selPawn.WorkTagIsDisabled(WorkTags.Hauling) || !selPawn.health.capacities.CapableOf(PawnCapacityDefOf.Manipulation))
+                reason = "incapable of hauling";
+            else if (this.IsForbidden(selPawn) || !selPawn.CanReserveAndReach(this, PathEndMode.Touch, Danger.Some, 1, -1, null, true))
+                reason = "barn is forbidden, reserved or unreachable";
+            else if (Map.GetComponent<VirtualHerdMapComponent>()?.NeedsFoodHauling != true)
+                reason = "feed reserve is full or no feed is needed";
+            else if (WorkGiver_HaulVirtualHerdFood.FindFoodForBarn(selPawn, this) == null)
+                reason = "no reachable allowed food for stored animals";
+            if (reason != null)
+            {
+                yield return new FloatMenuOption("Haul food to barn (" + reason + ")", null);
+                yield break;
+            }
+            yield return new FloatMenuOption("Haul food to barn", () =>
+            {
+                var food = WorkGiver_HaulVirtualHerdFood.FindFoodForBarn(selPawn, this);
+                if (food == null || Map.GetComponent<VirtualHerdMapComponent>()?.NeedsFoodHauling != true)
+                    return;
+                var job = HaulAIUtility.HaulToContainerJob(selPawn, food, this);
+                if (job != null)
+                {
+                    job.playerForced = true;
+                    selPawn.jobs.TryTakeOrderedJob(job, JobTag.Misc);
+                }
+            });
         }
 
         public override void Destroy(DestroyMode mode = DestroyMode.Vanish)

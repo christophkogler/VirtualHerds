@@ -4,7 +4,7 @@ Factory Herds (formerly Virtual Herds) is a RimWorld **1.7** factory farming mod
 
 ## Research and facilities
 
-Research the seven projects in the **Factory farming** tab. Each of the first six unlocks a distinct **4×4** barn. Build from Miscellaneous or select an existing barn's **Upgrade barn** command.
+Research the seven projects in the **Factory farming** tab. Each of the first six unlocks a distinct **6×6** barn. Build from Miscellaneous or select an existing barn's **Upgrade barn** command.
 
 | Tech | Research | Barn | Per-stat boost cap | Idle power | Extra feed coefficient | W per baseline nutrition/day |
 |---|---|---|---:|---:|---:|---:|
@@ -31,11 +31,13 @@ Powered-controller outages pause production, conception, gestation, and feeding;
 
 Cohort tuning follows mothers through conception, gestation, and delivery, and stays distinct when otherwise similar cohorts merge. Newborns and newly stored physical animals start with neutral cohort tuning and inherit global/species settings. Cohorts age normally; pregnancy acceleration does not accelerate aging.
 
+Existing buildable barns now occupy 6×6 cells when a save is loaded. Clear the extra border around previously built 4×4 facilities before updating. The hidden legacy 2×2 barn retains its original footprint.
+
 ## Upgrading safely
 
 The old barn operates while builders haul materials and construct its replacement. Construction work and delivered materials persist in saves. **Cancel barn upgrade** returns delivered materials near the building; if space is blocked, clear it and retry. Completion swaps to the next barn in one transaction and transfers food and the food filter without releasing or reabsorbing animals. The new footprint must remain clear throughout construction; power conduits are allowed underneath.
 
-Ordinary placement over an existing barn is rejected with guidance to use its upgrade command. The original **2×2** barn remains hidden in the build menu so existing saves can load it; upgrading it to the pasture barn requires room for the new 4×4 footprint. Removing the last barn normally still releases stored animals. Destroying an upgrading barn drops food/materials and follows that same release rule.
+Ordinary placement over an existing barn is rejected with guidance to use its upgrade command. The original **2×2** barn remains hidden in the build menu so existing saves can load it; upgrading it to the pasture barn requires room for the new 6×6 footprint. Removing the last barn normally still releases stored animals. Destroying an upgrading barn drops food/materials and follows that same release rule.
 
 ## Herd simulation
 
@@ -43,7 +45,7 @@ The herd manager sets per-species storage limits: total, adult male/female, youn
 
 Intake intentionally resets individual health, surgery, genes, lineage, names, training, and identity. Released animals are fresh generic healthy pawns with approximate age/pregnancy. No hidden pawn objects are kept. Milk, wool, eggs, reproduction and old-age deaths use deterministic averages. Old-age deaths reduce stored counts **without corpses or butcher products**; release thrumbos and butcher them normally for horns. Disease and starvation deaths are not simulated.
 
-Barns hold real food in saved inventories. Haulers maintain a configurable map-wide reserve (default five herd-days, refill below 80% of target). Compatible food is consumed spoil-first. Products appear near barns; blocked outputs stay pending. Digitized herds need no reserve or hauling, although existing food remains in inventory.
+Barns hold real food in saved inventories. Haulers maintain a configurable map-wide reserve (default five herd-days, refill below 80% of target). Select a barn → **Configure feed** to use the searchable food tree or the All food, Hay + kibble, Herd diet, and Clear presets. Filters are saved per barn and transferred on upgrade. Select an undrafted hauler and right-click a barn → **Haul food to barn** to order a delivery; the order respects the filter, stored species diets, reachability, and reserve demand. Compatible food is consumed spoil-first. Products appear near barns; blocked outputs stay pending. Digitized herds need no reserve or hauling, although existing food remains in inventory.
 
 ## Building and deployment
 

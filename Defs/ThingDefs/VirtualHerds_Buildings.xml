@@ -38,8 +38,8 @@
     <label>pasture barn</label>
     <description>A neolithic facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
     <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
-    <graphicData><texPath>Things/Building/HerdBarn_0</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(4,4)</drawSize></graphicData>
-    <size>(4,4)</size>
+    <graphicData><texPath>Things/Building/HerdBarn_0</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
     <altitudeLayer>Building</altitudeLayer>
     <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
     <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
@@ -57,8 +57,8 @@
     <label>managed herd barn</label>
     <description>A medieval facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
     <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
-    <graphicData><texPath>Things/Building/HerdBarn_1</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(4,4)</drawSize></graphicData>
-    <size>(4,4)</size>
+    <graphicData><texPath>Things/Building/HerdBarn_1</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
     <altitudeLayer>Building</altitudeLayer>
     <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
     <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
@@ -76,8 +76,8 @@
     <label>industrial livestock facility</label>
     <description>A industrial facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
     <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
-    <graphicData><texPath>Things/Building/HerdBarn_2</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(4,4)</drawSize></graphicData>
-    <size>(4,4)</size>
+    <graphicData><texPath>Things/Building/HerdBarn_2</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
     <altitudeLayer>Building</altitudeLayer>
     <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
     <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
@@ -95,8 +95,8 @@
     <label>spacer bioculture facility</label>
     <description>A spacer facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
     <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
-    <graphicData><texPath>Things/Building/HerdBarn_3</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(4,4)</drawSize></graphicData>
-    <size>(4,4)</size>
+    <graphicData><texPath>Things/Building/HerdBarn_3</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
     <altitudeLayer>Building</altitudeLayer>
     <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
     <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
@@ -114,8 +114,8 @@
     <label>ultratech herd foundry</label>
     <description>A ultra facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
     <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
-    <graphicData><texPath>Things/Building/HerdBarn_4</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(4,4)</drawSize></graphicData>
-    <size>(4,4)</size>
+    <graphicData><texPath>Things/Building/HerdBarn_4</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
     <altitudeLayer>Building</altitudeLayer>
     <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
     <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
@@ -133,8 +133,8 @@
     <label>archotech herd nexus</label>
     <description>A archotech facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
     <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
-    <graphicData><texPath>Things/Building/HerdBarn_5</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(4,4)</drawSize></graphicData>
-    <size>(4,4)</size>
+    <graphicData><texPath>Things/Building/HerdBarn_5</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
     <altitudeLayer>Building</altitudeLayer>
     <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
     <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
