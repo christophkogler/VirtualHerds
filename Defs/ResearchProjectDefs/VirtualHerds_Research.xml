@@ -1,0 +1,38 @@
+<Defs>
+  <ResearchTabDef><defName>VirtualHerds_FactoryFarming</defName><label>Factory farming</label></ResearchTabDef>
+  <ResearchProjectDef>
+    <defName>VirtualHerds_Pastoralism</defName><label>Pastoralism</label><description>A herd need not wander to prosper. Sheltered pens, dependable fodder and careful pairing let a few good animals sustain an entire settlement. With enough food in the troughs, herders can coax more milk, fleece and offspring from their stock, though every gain must be paid for at the harvest.</description>
+    <baseCost>400</baseCost><techLevel>Neolithic</techLevel>
+    <tab>VirtualHerds_FactoryFarming</tab><researchViewX>0</researchViewX><researchViewY>0</researchViewY>
+  </ResearchProjectDef>
+  <ResearchProjectDef>
+    <defName>VirtualHerds_ManagedHusbandry</defName><label>Managed husbandry</label><description>Leave mating to chance and the herd will follow its own seasons. Keep records, choose breeding pairs and bring the feeding house under a single roof, and those seasons become something a keeper can plan around. Electrified feeders and simple machinery ease part of the burden, allowing richer yields without putting every extra mouthful on the grain bill.</description>
+    <baseCost>1000</baseCost><techLevel>Medieval</techLevel>
+    <tab>VirtualHerds_FactoryFarming</tab><researchViewX>1</researchViewX><researchViewY>0</researchViewY><prerequisites><li>VirtualHerds_Pastoralism</li></prerequisites>
+  </ResearchProjectDef>
+  <ResearchProjectDef>
+    <defName>VirtualHerds_IntensiveHusbandry</defName><label>Intensive husbandry</label><description>The stockyard becomes a production line. Metered rations, monitored breeding cycles and powered stalls keep livestock growing and producing with little wasted effort. Greater yields and shorter waits between births are possible, but the colony must supply both the feed mills and the generators that keep the sheds running.</description>
+    <baseCost>2500</baseCost><techLevel>Industrial</techLevel>
+    <tab>VirtualHerds_FactoryFarming</tab><researchViewX>2</researchViewX><researchViewY>0</researchViewY><prerequisites><li>VirtualHerds_ManagedHusbandry</li></prerequisites>
+  </ResearchProjectDef>
+  <ResearchProjectDef>
+    <defName>VirtualHerds_AcceleratedBioculture</defName><label>Accelerated bioculture</label><description>A womb follows chemical signals, not the calendar. Regulate those signals, hold the environment steady and deliver nutrients exactly where they are needed, and generations can arrive in rapid succession. Sealed bioculture chambers drive milk, fleece and reproduction well beyond ordinary husbandry, drawing more of their growing appetite from the power grid.</description>
+    <baseCost>5000</baseCost><techLevel>Spacer</techLevel>
+    <tab>VirtualHerds_FactoryFarming</tab><researchViewX>3</researchViewX><researchViewY>0</researchViewY><prerequisites><li>VirtualHerds_IntensiveHusbandry</li></prerequisites>
+  </ResearchProjectDef>
+  <ResearchProjectDef>
+    <defName>VirtualHerds_SyntheticEcosystems</defName><label>Synthetic ecosystems</label><description>The herd is no longer merely housed in its environment; the environment is built around the herd. Responsive nutrient baths and coordinated growth chambers turn each breeding group into part of a single managed ecosystem. Extraordinary production is within reach, with only a small share of the additional burden left to the feed stores. The rest falls on the reactors.</description>
+    <baseCost>10000</baseCost><techLevel>Ultra</techLevel>
+    <tab>VirtualHerds_FactoryFarming</tab><researchViewX>4</researchViewX><researchViewY>0</researchViewY><prerequisites><li>VirtualHerds_AcceleratedBioculture</li></prerequisites>
+  </ResearchProjectDef>
+  <ResearchProjectDef>
+    <defName>VirtualHerds_VirtualHerds</defName><label>Virtual herds</label><description>Fragments of an archotech design describe an animal as a living pattern: metabolism, growth and reproduction, all susceptible to revision. A herd nexus can hold those patterns in carefully constrained fields and drive them at rates no natural body could survive. Its inhabitants still need sustenance, but further acceleration asks nothing more of the farms. It asks everything of the power grid.</description>
+    <baseCost>20000</baseCost><techLevel>Archotech</techLevel>
+    <tab>VirtualHerds_FactoryFarming</tab><researchViewX>5</researchViewX><researchViewY>0</researchViewY><prerequisites><li>VirtualHerds_SyntheticEcosystems</li></prerequisites>
+  </ResearchProjectDef>
+  <ResearchProjectDef>
+    <defName>VirtualHerds_Digitization</defName><label>Full digitization</label><description>The last biological tether can be cut. Within the nexus, even the exchange of matter can be replaced by a faithful expression of the living pattern, sustained entirely by energy. No fodder enters; no pasture is required. The herd endures as long as the current does, while the generators shoulder ten times their former load.</description>
+    <baseCost>30000</baseCost><techLevel>Archotech</techLevel>
+    <tab>VirtualHerds_FactoryFarming</tab><researchViewX>6</researchViewX><researchViewY>0</researchViewY><prerequisites><li>VirtualHerds_VirtualHerds</li></prerequisites>
+  </ResearchProjectDef>
+</Defs>

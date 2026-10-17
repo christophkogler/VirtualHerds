@@ -1,0 +1,14 @@
+# Barn feed controls validation — 2026-10-17
+
+Baseline e168e58; branch barn-feed-controls. Initially clean checkout. No user edits included or displaced.
+
+- Release builds for RimWorld 1.7 and optional 1.6 passed. NuGet NU1900 vulnerability-service warning remained after an escalated retry; compilation succeeded. Pure self-tests passed.
+- XML assertion passed: all six buildable barns have size and drawSize (6,6); hidden legacy barn remains (2,2). git diff --check passed.
+- Isolated installed RimWorld 1.7.4981 rev136, Harmony, Core and five DLC, Factory Herds only; no probe. Normal user configuration and installed mod untouched.
+- /tmp/vh-feed-controls reached a visually confirmed quicktest colony. Developer spawn actions placed two legacy barns and one hay unit; normal intake stored the starting donkey. Ordinary Configure feed UI showed the new preset row without overlap. Hay + kibble allowed exactly those two definitions, visible in the tree and saved XML. Right-click with Patricia selected offered Haul food to barn; clicking it visibly assigned 'Hauling hay to jade virtual herd barn', with Clear prioritized work visible. Hay disappeared from ground and appeared inside the selected barn in the normal UI-created save feed-filter-check.rws. No-food-needed disabled option was observed before intake. Screenshots: 1792277270880335483, 1792277278582115805, 1792277289771432220, 1792277349766591401, 1792277360108669343, 1792277372145415615.
+- Pasture barn placement preview was observed at 6x6 scale (1792277439028914410); all tier footprints were checked in XML. Full construction/upgrade cycle at the new size was not run.
+- /tmp/vh-feed-final snapshots the final payload including both rebuilt versions. Hash/source/mod-list verification passed before launch and after interaction. Loaded the named save after a full process restart; visually confirmed the restored hay/kibble filter (1792277551182165623). Clear preset then disabled the haul option with 'no reachable allowed food for stored animals' (1792277565315581198). No in-session reload was performed. No 1.6 gameplay test.
+- Both current logs inspected; only the known engine Wayland-not-initialized errors were present, with no new mod exceptions during these interactions. First run's source snapshot differs only because the inactive 1.6 DLL was subsequently rebuilt and README updated; final run has a clean verification.
+- Both owned game processes/private displays stopped. Evidence, manifests, action history and save retained in the above /tmp directories.
+
+Limits: did not test all presets, modded diets, all path/reservation/capability failures, migration of existing buildable 4x4 facilities in crowded saves, or full 6x6 upgrade construction. README advises clearing the expanded border before updating. Existing food filter serialization and upgrade transfer paths are retained.

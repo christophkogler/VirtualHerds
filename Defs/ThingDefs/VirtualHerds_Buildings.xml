@@ -28,6 +28,123 @@
       <li>Woody</li>
       <li>Stony</li>
     </stuffCategories>
+    <!-- Retained at its original size for existing saves. -->
+    <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
+    <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>0</tier><nextBarnDefName>VirtualHerds_PastureBarn</nextBarnDefName></li></modExtensions>
+  </ThingDef>
+
+  <ThingDef ParentName="BuildingBase">
+    <defName>VirtualHerds_PastureBarn</defName>
+    <label>pasture barn</label>
+    <description>A neolithic facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
+    <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
+    <graphicData><texPath>Things/Building/HerdBarn_0</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
+    <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
+    <terrainAffordanceNeeded>Heavy</terrainAffordanceNeeded>
+    <statBases><WorkToMake>4000</WorkToMake><MaxHitPoints>300</MaxHitPoints><Flammability>0.6</Flammability></statBases>
+    <costList><WoodLog>350</WoodLog><BlocksGranite>150</BlocksGranite></costList>
     <designationCategory>Misc</designationCategory>
+    <researchPrerequisites><li>VirtualHerds_Pastoralism</li></researchPrerequisites>
+    <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
+    <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>0</tier><nextBarnDefName>VirtualHerds_ManagedBarn</nextBarnDefName></li></modExtensions>
+
+  </ThingDef>
+  <ThingDef ParentName="BuildingBase">
+    <defName>VirtualHerds_ManagedBarn</defName>
+    <label>managed herd barn</label>
+    <description>A medieval facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
+    <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
+    <graphicData><texPath>Things/Building/HerdBarn_1</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
+    <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
+    <terrainAffordanceNeeded>Heavy</terrainAffordanceNeeded>
+    <statBases><WorkToMake>8000</WorkToMake><MaxHitPoints>500</MaxHitPoints><Flammability>0.6</Flammability></statBases>
+    <costList><WoodLog>400</WoodLog><BlocksGranite>250</BlocksGranite><Steel>150</Steel></costList>
+    <designationCategory>Misc</designationCategory>
+    <researchPrerequisites><li>VirtualHerds_ManagedHusbandry</li></researchPrerequisites>
+    <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
+    <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>1</tier><nextBarnDefName>VirtualHerds_IndustrialBarn</nextBarnDefName></li></modExtensions>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>100</basePowerConsumption></li></comps>
+  </ThingDef>
+  <ThingDef ParentName="BuildingBase">
+    <defName>VirtualHerds_IndustrialBarn</defName>
+    <label>industrial livestock facility</label>
+    <description>A industrial facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
+    <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
+    <graphicData><texPath>Things/Building/HerdBarn_2</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
+    <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
+    <terrainAffordanceNeeded>Heavy</terrainAffordanceNeeded>
+    <statBases><WorkToMake>18000</WorkToMake><MaxHitPoints>700</MaxHitPoints><Flammability>0.2</Flammability></statBases>
+    <costList><Steel>800</Steel><ComponentIndustrial>20</ComponentIndustrial></costList>
+    <designationCategory>Misc</designationCategory>
+    <researchPrerequisites><li>VirtualHerds_IntensiveHusbandry</li></researchPrerequisites>
+    <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
+    <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>2</tier><nextBarnDefName>VirtualHerds_SpacerBarn</nextBarnDefName></li></modExtensions>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>500</basePowerConsumption></li></comps>
+  </ThingDef>
+  <ThingDef ParentName="BuildingBase">
+    <defName>VirtualHerds_SpacerBarn</defName>
+    <label>spacer bioculture facility</label>
+    <description>A spacer facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
+    <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
+    <graphicData><texPath>Things/Building/HerdBarn_3</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
+    <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
+    <terrainAffordanceNeeded>Heavy</terrainAffordanceNeeded>
+    <statBases><WorkToMake>30000</WorkToMake><MaxHitPoints>900</MaxHitPoints><Flammability>0.2</Flammability></statBases>
+    <costList><Steel>1200</Steel><Plasteel>200</Plasteel><ComponentIndustrial>30</ComponentIndustrial><ComponentSpacer>10</ComponentSpacer></costList>
+    <designationCategory>Misc</designationCategory>
+    <researchPrerequisites><li>VirtualHerds_AcceleratedBioculture</li></researchPrerequisites>
+    <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
+    <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>3</tier><nextBarnDefName>VirtualHerds_UltraBarn</nextBarnDefName></li></modExtensions>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>1500</basePowerConsumption></li></comps>
+  </ThingDef>
+  <ThingDef ParentName="BuildingBase">
+    <defName>VirtualHerds_UltraBarn</defName>
+    <label>ultratech herd foundry</label>
+    <description>A ultra facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
+    <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
+    <graphicData><texPath>Things/Building/HerdBarn_4</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
+    <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
+    <terrainAffordanceNeeded>Heavy</terrainAffordanceNeeded>
+    <statBases><WorkToMake>50000</WorkToMake><MaxHitPoints>1200</MaxHitPoints><Flammability>0.2</Flammability></statBases>
+    <costList><Plasteel>600</Plasteel><Uranium>200</Uranium><Gold>150</Gold><ComponentSpacer>35</ComponentSpacer></costList>
+    <designationCategory>Misc</designationCategory>
+    <researchPrerequisites><li>VirtualHerds_SyntheticEcosystems</li></researchPrerequisites>
+    <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
+    <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>4</tier><nextBarnDefName>VirtualHerds_ArchotechBarn</nextBarnDefName></li></modExtensions>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>5000</basePowerConsumption></li></comps>
+  </ThingDef>
+  <ThingDef ParentName="BuildingBase">
+    <defName>VirtualHerds_ArchotechBarn</defName>
+    <label>archotech herd nexus</label>
+    <description>A archotech facility for intensive livestock management. Herds are pooled across this map; the most advanced barn controls all boost limits and operating power costs. Use the upgrade command to rebuild in place without releasing animals. Every upgrade requires the full new facility's resources and construction work.</description>
+    <thingClass>VirtualHerds.Building_VirtualBarn</thingClass>
+    <graphicData><texPath>Things/Building/HerdBarn_5</texPath><graphicClass>Graphic_Single</graphicClass><drawSize>(6,6)</drawSize></graphicData>
+    <size>(6,6)</size>
+    <altitudeLayer>Building</altitudeLayer>
+    <passability>PassThroughOnly</passability><pathCost>50</pathCost><fillPercent>0.5</fillPercent>
+    <tickerType>Normal</tickerType><useHitPoints>true</useHitPoints>
+    <terrainAffordanceNeeded>Heavy</terrainAffordanceNeeded>
+    <statBases><WorkToMake>90000</WorkToMake><MaxHitPoints>1800</MaxHitPoints><Flammability>0.2</Flammability></statBases>
+    <costList><Plasteel>1200</Plasteel><Gold>600</Gold><Uranium>400</Uranium><ComponentSpacer>100</ComponentSpacer></costList>
+    <designationCategory>Misc</designationCategory>
+    <researchPrerequisites><li>VirtualHerds_VirtualHerds</li></researchPrerequisites>
+    <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
+    <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>5</tier></li></modExtensions>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>15000</basePowerConsumption></li></comps>
   </ThingDef>
 </Defs>

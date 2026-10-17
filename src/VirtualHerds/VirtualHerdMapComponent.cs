@@ -21,6 +21,12 @@ namespace VirtualHerds
         private List<VirtualHerdOutput> pendingOutputs = new List<VirtualHerdOutput>();
         private List<VirtualHerdSpeciesState> speciesStates = new List<VirtualHerdSpeciesState>();
         private float reserveDays = 5f;
+        private HerdBoostSettings globalBoosts = new HerdBoostSettings();
+        private List<HerdSpeciesBoost> speciesBoosts = new List<HerdSpeciesBoost>();
+        private bool digitized;
+        private int barnReplacementDepth;
+        private Building_VirtualBarn controllerCache;
+        private int controllerCacheTick = -1;
         private int lastPawnCount = -1;
         private bool dirty = true;
         private int lastSimulationTick = -1;
@@ -30,6 +36,91 @@ namespace VirtualHerds
         public float ReserveDays => reserveDays;
         public bool HasBarns => Barns().Count > 0;
         public int StoredCount => cohorts.Sum(cohort => Math.Max(0, cohort.count));
+        public HerdBoostSettings GlobalBoosts => globalBoosts;
+        public Building_VirtualBarn Controller
+        {
+            get
+            {
+                var tick = Find.TickManager?.TicksGame ?? -2;
+                if (tick != controllerCacheTick || controllerCache == null || !controllerCache.Spawned || controllerCache.Faction != Faction.OfPlayer)
+                {
+                    controllerCache = Barns().OrderByDescending(barn => barn.Tier).ThenBy(barn => barn.thingIDNumber).FirstOrDefault();
+                    controllerCacheTick = tick;
+                }
+                return controllerCache;
+            }
+        }
+        public int TechTier => Controller?.Tier ?? 0;
+        public float MaxBoost => BoostMath.Cap(TechTier);
+        public bool CanDigitize => TechTier == 5 && DefDatabase<ResearchProjectDef>.GetNamedSilentFail("VirtualHerds_Digitization")?.IsFinished == true;
+        public bool Digitized => digitized && CanDigitize;
+        public bool PowerReady => Controller != null && (TechTier == 0 || Controller.TryGetComp<CompPowerTrader>()?.PowerOn == true);
+        public float RequiredPowerWatts
+        {
+            get
+            {
+                var tier = TechTier;
+                var digital = Digitized;
+                var result = BoostMath.IdleWatts(tier) * (digital ? 10f : 1f);
+                foreach (var cohort in cohorts)
+                {
+                    var boost = EffectiveBoosts(cohort);
+                    result += BoostMath.LoadWatts(tier, BaselineNutritionFor(cohort), boost.output, boost.breeding, boost.gestation, digital);
+                }
+                return result;
+            }
+        }
+
+        public HerdBoostSettings BoostsFor(ThingDef def)
+        {
+            var entry = speciesBoosts.FirstOrDefault(item => item.defName == def.defName);
+            if (entry == null) { entry = new HerdSpeciesBoost { defName = def.defName }; speciesBoosts.Add(entry); }
+            return entry.boosts;
+        }
+
+        public HerdBoostSettings EffectiveBoosts(VirtualHerdCohort cohort)
+        {
+            var species = speciesBoosts.FirstOrDefault(item => item.defName == cohort.defName)?.boosts;
+            var individual = cohort.boosts;
+            var tier = TechTier;
+            return new HerdBoostSettings
+            {
+                output = BoostMath.Combine(globalBoosts.output, species?.output ?? 1f, individual?.output ?? 1f, tier),
+                breeding = BoostMath.Combine(globalBoosts.breeding, species?.breeding ?? 1f, individual?.breeding ?? 1f, tier),
+                gestation = BoostMath.Combine(globalBoosts.gestation, species?.gestation ?? 1f, individual?.gestation ?? 1f, tier)
+            };
+        }
+
+        private static float BaselineNutritionFor(VirtualHerdCohort cohort)
+            => VirtualHerdUtility.NutritionPerDay(cohort.Def, cohort.lifeStageIndex) * Math.Max(0, cohort.count);
+
+        public float DailyNutritionFor(VirtualHerdCohort cohort)
+        {
+            var boost = EffectiveBoosts(cohort);
+            return BaselineNutritionFor(cohort) * BoostMath.NutritionFactor(TechTier, boost.output, boost.breeding, boost.gestation, Digitized);
+        }
+
+        public void SetDigitized(bool enabled)
+        {
+            digitized = enabled && CanDigitize;
+            SetBoostsChanged();
+        }
+
+        public void SetBoostsChanged() { dirty = true; controllerCacheTick = -1; RefreshPowerDemand(); }
+        public void BeginBarnReplacement() { barnReplacementDepth++; controllerCacheTick = -1; }
+        public void EndBarnReplacement() { barnReplacementDepth = Math.Max(0, barnReplacementDepth - 1); SetBoostsChanged(); }
+
+        private void RefreshPowerDemand()
+        {
+            var controller = Controller;
+            if (controller == null) return;
+            var demand = RequiredPowerWatts;
+            foreach (var barn in Barns())
+            {
+                var power = barn.TryGetComp<CompPowerTrader>();
+                if (power != null) power.PowerOutput = -(barn == controller ? demand : BoostMath.IdleWatts(barn.Tier));
+            }
+        }
 
         public override void ExposeData()
         {
@@ -39,7 +130,13 @@ namespace VirtualHerds
             Scribe_Collections.Look(ref pendingOutputs, "pendingOutputs", LookMode.Deep);
             Scribe_Collections.Look(ref speciesStates, "speciesStates", LookMode.Deep);
             Scribe_Values.Look(ref reserveDays, "reserveDays", 5f);
+            Scribe_Deep.Look(ref globalBoosts, "globalBoosts");
+            Scribe_Collections.Look(ref speciesBoosts, "speciesBoosts", LookMode.Deep);
+            Scribe_Values.Look(ref digitized, "digitized");
             if (Scribe.mode != LoadSaveMode.PostLoadInit) return;
+            globalBoosts = globalBoosts ?? new HerdBoostSettings();
+            speciesBoosts = speciesBoosts ?? new List<HerdSpeciesBoost>();
+            speciesBoosts.RemoveAll(item => item == null || string.IsNullOrEmpty(item.defName));
             cohorts = cohorts ?? new List<VirtualHerdCohort>();
             limits = limits ?? new List<VirtualHerdLimitEntry>();
             pendingOutputs = pendingOutputs ?? new List<VirtualHerdOutput>();
@@ -63,11 +160,12 @@ namespace VirtualHerds
             if (!reconcileCheckDue && !simulationDue && !fallbackReconcileDue) return;
             if (!HasBarns)
             {
-                if (reconcileCheckDue && cohorts.Count > 0) ReleaseAll(map.Center);
+                if (barnReplacementDepth == 0 && reconcileCheckDue && cohorts.Count > 0) ReleaseAll(map.Center);
                 return;
             }
             if (reconcileCheckDue)
             {
+                RefreshPowerDemand();
                 var pawnCount = map.mapPawns?.AllPawnsSpawned?.Count ?? 0;
                 if (pawnCount != lastPawnCount) { lastPawnCount = pawnCount; dirty = true; }
             }
@@ -134,7 +232,7 @@ namespace VirtualHerds
 
         public float FoodNutrition => Barns().Sum(barn => barn.FoodInventory.InnerListForReading.Where(food => VirtualHerdUtility.IsNutritionFoodDef(food.def))
             .Where(food => barn.FoodFilter == null || barn.FoodFilter.Allows(food)).Sum(food => food.GetStatValue(StatDefOf.Nutrition) * food.stackCount));
-        public float RequiredReserveNutrition => cohorts.Sum(cohort => VirtualHerdUtility.NutritionPerDay(cohort.Def, cohort.lifeStageIndex) * cohort.count) * reserveDays;
+        public float RequiredReserveNutrition => cohorts.Sum(cohort => DailyNutritionFor(cohort)) * reserveDays;
         public bool NeedsFoodHauling
         {
             get
@@ -144,7 +242,7 @@ namespace VirtualHerds
                 {
                     var def = group.First().Def;
                     var state = SpeciesState(group.Key);
-                    var dailyNeed = group.Sum(cohort => VirtualHerdUtility.NutritionPerDay(def, cohort.lifeStageIndex) * cohort.count);
+                    var dailyNeed = group.Sum(DailyNutritionFor);
                     var required = dailyNeed * reserveDays;
                     var available = state.nutritionCredit + Barns().Sum(barn => barn.FoodInventory.InnerListForReading
                         .Where(food => VirtualHerdUtility.IsCompatibleFood(def, food.def) && (barn.FoodFilter == null || barn.FoodFilter.Allows(food)))
@@ -164,8 +262,9 @@ namespace VirtualHerds
 
         public void NotifyBarnRemoved(Building_VirtualBarn removed)
         {
+            controllerCacheTick = -1;
             var remaining = Barns().Where(barn => barn != removed && !barn.Destroyed).ToList();
-            if (remaining.Count == 0 && cohorts.Count > 0) ReleaseAll(removed?.Position ?? map.Center);
+            if (barnReplacementDepth == 0 && remaining.Count == 0 && cohorts.Count > 0) ReleaseAll(removed?.Position ?? map.Center);
         }
 
         public void ConfirmDiscardStoredAnimals()
@@ -339,13 +438,15 @@ namespace VirtualHerds
 
         private void SimulateHour()
         {
-            var feedRatios = ConsumeNutritionBySpecies();
+            RefreshPowerDemand();
+            var feedRatios = PowerReady ? ConsumeNutritionBySpecies() : new Dictionary<string, float>();
             foreach (var cohort in cohorts.ToList())
             {
                 if (cohort.Def == null || cohort.count <= 0) continue;
                 AdvanceAge(cohort); ApplyOldAgeMortality(cohort);
                 var ratio = feedRatios.TryGetValue(cohort.defName, out var value) ? value : 0f;
-                AdvancePregnancy(cohort, ratio); Produce(cohort, ratio);
+                var boost = EffectiveBoosts(cohort);
+                AdvancePregnancy(cohort, ratio * boost.gestation); Produce(cohort, ratio * boost.output);
             }
             StartPregnancies(feedRatios);
             foreach (var def in cohorts.Select(cohort => cohort.Def).Where(def => def != null).Distinct().ToList()) EnforceLimits(def);
@@ -361,7 +462,7 @@ namespace VirtualHerds
             var totalDemand = new Dictionary<string, float>();
             foreach (var cohort in species)
             {
-                var demand = cohorts.Where(item => item.defName == cohort.defName).Sum(item => VirtualHerdUtility.NutritionPerDay(item.Def, item.lifeStageIndex) * item.count) / 24f;
+                var demand = cohorts.Where(item => item.defName == cohort.defName).Sum(DailyNutritionFor) / 24f;
                 totalDemand[cohort.defName] = demand;
                 var state = SpeciesState(cohort.defName);
                 var fromCredit = Math.Min(state.nutritionCredit, demand);
@@ -435,14 +536,14 @@ namespace VirtualHerds
             while (cohort.gestationAccumulator >= 1f / GestationBins) { cohort.gestationAccumulator -= 1f / GestationBins; cohort.gestationBin++; }
             if (cohort.gestationBin < GestationBins) return;
             var count = cohort.count;
-            var mother = cohorts.FirstOrDefault(item => item != cohort && item.defName == cohort.defName && item.Sex == HerdSex.Female && item.lifeStageIndex == cohort.lifeStageIndex && item.ageProgressBin == cohort.ageProgressBin && !item.Pregnant);
+            var mother = cohorts.FirstOrDefault(item => item != cohort && item.boosts.Key == cohort.boosts.Key && item.pawnKindDefName == cohort.pawnKindDefName && item.defName == cohort.defName && item.Sex == HerdSex.Female && item.lifeStageIndex == cohort.lifeStageIndex && item.ageProgressBin == cohort.ageProgressBin && !item.Pregnant);
             if (mother == null)
             {
-                mother = new VirtualHerdCohort { defName = cohort.defName, pawnKindDefName = cohort.pawnKindDefName, sex = HerdSex.Female, lifeStageIndex = cohort.lifeStageIndex, ageProgressBin = cohort.ageProgressBin, gestationBin = -1 };
+                mother = new VirtualHerdCohort { boosts = cohort.boosts.Clone(), defName = cohort.defName, pawnKindDefName = cohort.pawnKindDefName, sex = HerdSex.Female, lifeStageIndex = cohort.lifeStageIndex, ageProgressBin = cohort.ageProgressBin, gestationBin = -1 };
                 cohorts.Add(mother);
             }
             mother.count += count;
-            mother.birthRemainder += cohort.birthRemainder;
+            TransferCohortState(cohort, mother, count, count);
             var births = HerdMath.ConsumeWhole(ref mother.birthRemainder, count * LitterAverage(cohort.Def));
             AddOffspring(cohort.Def, cohort.pawnKindDefName, births, ref mother.femaleBirthRemainder);
             cohort.count = 0;
@@ -457,19 +558,43 @@ namespace VirtualHerds
                 if (males <= 0) continue;
                 foreach (var female in cohorts.Where(item => item.Def == def && !item.Pregnant && item.Sex == HerdSex.Female && VirtualHerdUtility.IsAdult(def, item.lifeStageIndex)).ToList())
                 {
-                    var rate = ratio / (Math.Max(1f, def.race.gestationPeriodDays) * 24f) * Math.Min(1f, males / (float)Math.Max(1, female.count));
+                    var rate = ratio * EffectiveBoosts(female).breeding / (Math.Max(1f, def.race.gestationPeriodDays) * 24f) * Math.Min(1f, males / (float)Math.Max(1, female.count));
                     var amount = Math.Min(female.count, HerdMath.ConsumeWhole(ref female.conceptionRemainder, female.count * rate));
                     if (amount <= 0) continue;
                     female.count -= amount;
-                    var pregnant = cohorts.FirstOrDefault(item => item.Def == def && item.Sex == HerdSex.Female && item.lifeStageIndex == female.lifeStageIndex && item.ageProgressBin == female.ageProgressBin && item.gestationBin == 0);
+                    var pregnant = cohorts.FirstOrDefault(item => item.boosts.Key == female.boosts.Key && item.pawnKindDefName == female.pawnKindDefName && item.Def == def && item.Sex == HerdSex.Female && item.lifeStageIndex == female.lifeStageIndex && item.ageProgressBin == female.ageProgressBin && item.gestationBin == 0);
                     if (pregnant == null)
                     {
-                        pregnant = new VirtualHerdCohort { defName = def.defName, pawnKindDefName = female.pawnKindDefName, sex = HerdSex.Female, lifeStageIndex = female.lifeStageIndex, ageProgressBin = female.ageProgressBin, gestationBin = 0 };
+                        pregnant = new VirtualHerdCohort { boosts = female.boosts.Clone(), defName = def.defName, pawnKindDefName = female.pawnKindDefName, sex = HerdSex.Female, lifeStageIndex = female.lifeStageIndex, ageProgressBin = female.ageProgressBin, gestationBin = 0 };
                         cohorts.Add(pregnant);
                     }
                     pregnant.count += amount;
+                    TransferCohortState(female, pregnant, amount, female.count + amount);
                 }
             }
+        }
+
+        // Count has already moved. Preserve age progress and proportional fractional work
+        // when reproduction splits a tuned cohort or returns mothers after delivery.
+        private static void TransferCohortState(VirtualHerdCohort source, VirtualHerdCohort target, int moved, int originalCount)
+        {
+            var fraction = moved / (float)Math.Max(1, originalCount);
+            var retained = Math.Max(0, target.count - moved);
+            target.ageAccumulator = (target.ageAccumulator * retained + source.ageAccumulator * moved) / Math.Max(1, target.count);
+            TransferRemainder(ref source.conceptionRemainder, ref target.conceptionRemainder, fraction);
+            TransferRemainder(ref source.birthRemainder, ref target.birthRemainder, fraction);
+            TransferRemainder(ref source.femaleBirthRemainder, ref target.femaleBirthRemainder, fraction);
+            TransferRemainder(ref source.mortalityRemainder, ref target.mortalityRemainder, fraction);
+            TransferRemainder(ref source.milkAccumulator, ref target.milkAccumulator, fraction);
+            TransferRemainder(ref source.woolAccumulator, ref target.woolAccumulator, fraction);
+            TransferRemainder(ref source.eggAccumulator, ref target.eggAccumulator, fraction);
+        }
+
+        private static void TransferRemainder(ref float source, ref float target, float fraction)
+        {
+            var amount = source * fraction;
+            source -= amount;
+            target += amount;
         }
 
         private static float LitterAverage(ThingDef def) => def?.race?.litterSizeCurve == null ? 1f : Math.Max(1f, def.race.litterSizeCurve.Evaluate(0.5f));
@@ -486,7 +611,7 @@ namespace VirtualHerds
         private void AddCohort(ThingDef def, string kindName, HerdSex sex, int lifeStage, int ageBin, int gestation, int count)
         {
             if (count <= 0) return;
-            var cohort = cohorts.FirstOrDefault(item => item.Def == def && item.pawnKindDefName == kindName && item.sex == sex && item.lifeStageIndex == lifeStage && item.ageProgressBin == ageBin && item.gestationBin == gestation);
+            var cohort = cohorts.FirstOrDefault(item => item.Def == def && item.pawnKindDefName == kindName && item.sex == sex && item.lifeStageIndex == lifeStage && item.ageProgressBin == ageBin && item.gestationBin == gestation && item.boosts.IsDefault);
             if (cohort == null) { cohort = new VirtualHerdCohort { defName = def.defName, pawnKindDefName = kindName, sex = sex, lifeStageIndex = lifeStage, ageProgressBin = ageBin, gestationBin = gestation }; cohorts.Add(cohort); }
             cohort.count += count;
         }
@@ -548,7 +673,7 @@ namespace VirtualHerds
             var merged = new Dictionary<string, VirtualHerdCohort>();
             foreach (var cohort in cohorts.ToList())
             {
-                var key = cohort.defName + ":" + cohort.pawnKindDefName + ":" + cohort.sex + ":" + cohort.lifeStageIndex + ":" + cohort.ageProgressBin + ":" + cohort.gestationBin;
+                var key = cohort.defName + ":" + cohort.pawnKindDefName + ":" + cohort.sex + ":" + cohort.lifeStageIndex + ":" + cohort.ageProgressBin + ":" + cohort.gestationBin + ":" + cohort.boosts.Key;
                 if (!merged.TryGetValue(key, out var existing)) { merged[key] = cohort; continue; }
                 var left = existing.count; var right = cohort.count; var total = left + right; existing.count = total;
                 existing.ageAccumulator = total <= 0 ? 0f : (existing.ageAccumulator * left + cohort.ageAccumulator * right) / total;
@@ -561,6 +686,6 @@ namespace VirtualHerds
 
         private static HerdCategory CategoryFor(VirtualHerdCohort cohort) => HerdMath.CategoryFor(cohort.Sex, VirtualHerdUtility.IsAdult(cohort.Def, cohort.lifeStageIndex), cohort.Pregnant);
         private static float AgeScore(VirtualHerdCohort cohort) => cohort.lifeStageIndex * AgeBins + cohort.ageProgressBin + cohort.ageAccumulator;
-        private static bool SameKey(VirtualHerdCohort left, VirtualHerdCohort right) => left.defName == right.defName && left.pawnKindDefName == right.pawnKindDefName && left.sex == right.sex && left.lifeStageIndex == right.lifeStageIndex && left.ageProgressBin == right.ageProgressBin && left.gestationBin == right.gestationBin;
+        private static bool SameKey(VirtualHerdCohort left, VirtualHerdCohort right) => left.boosts.Key == right.boosts.Key && left.defName == right.defName && left.pawnKindDefName == right.pawnKindDefName && left.sex == right.sex && left.lifeStageIndex == right.lifeStageIndex && left.ageProgressBin == right.ageProgressBin && left.gestationBin == right.gestationBin;
     }
 }

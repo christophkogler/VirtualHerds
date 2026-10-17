@@ -6,6 +6,7 @@ namespace VirtualHerds
 {
     public sealed class VirtualHerdCohort : IExposable
     {
+        public HerdBoostSettings boosts = new HerdBoostSettings();
         public string defName;
         public string pawnKindDefName;
         public HerdSex sex;
@@ -29,6 +30,7 @@ namespace VirtualHerds
 
         public void ExposeData()
         {
+            Scribe_Deep.Look(ref boosts, "boosts");
             Scribe_Values.Look(ref defName, "defName");
             Scribe_Values.Look(ref pawnKindDefName, "pawnKindDefName");
             Scribe_Values.Look(ref sex, "sex");
@@ -47,6 +49,7 @@ namespace VirtualHerds
             Scribe_Values.Look(ref eggAccumulator, "eggAccumulator");
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
+                boosts = boosts ?? new HerdBoostSettings();
                 count = count < 0 ? 0 : count;
                 ageProgressBin = ageProgressBin < 0 ? 0 : ageProgressBin > 15 ? 15 : ageProgressBin;
                 gestationBin = gestationBin < 0 ? -1 : gestationBin > 16 ? 16 : gestationBin;
