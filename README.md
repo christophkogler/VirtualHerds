@@ -1,35 +1,64 @@
-# Virtual Herds
+# Factory Herds
 
-Virtual Herds is a RimWorld 1.6 mod (`christoph.virtualherds`) for pooled livestock simulation. It is incompatible with `christoph.HerdCompression`.
+Factory Herds (formerly Virtual Herds) is a RimWorld **1.7** factory farming mod. It keeps livestock in pooled, definition-driven cohorts and lets a late-game colony trade increasingly large amounts of power for production and reproductive speed. Package ID remains `christoph.virtualherds`; HerdCompression is incompatible.
 
-Build from `src/VirtualHerds`:
+## Research and facilities
+
+Research the seven projects in the **Factory farming** tab. Each of the first six unlocks a distinct **4×4** barn. Build from Miscellaneous or select an existing barn's **Upgrade barn** command.
+
+| Tech | Research | Barn | Per-stat boost cap | Idle power | Extra feed coefficient | W per baseline nutrition/day |
+|---|---|---|---:|---:|---:|---:|
+| Neolithic | Pastoralism | Pasture barn | 2× | 0 | 2 | 0 |
+| Medieval | Managed husbandry | Managed herd barn | 3× | 100 | 1.5 | 50 |
+| Industrial | Intensive husbandry | Industrial livestock facility | 6× | 500 | 1 | 150 |
+| Spacer | Accelerated bioculture | Spacer bioculture facility | 12× | 1,500 | 0.5 | 400 |
+| Ultra | Synthetic ecosystems | Ultratech herd foundry | 25× | 5,000 | 0.2 | 1,000 |
+| Archotech | Virtual herds | Archotech herd nexus | 100× | 15,000 | 0 | 2,500 |
+
+Every tier requires the full building resource cost and construction work, including upgrades. Later facilities require steel, plasteel, uranium, gold, industrial components, and advanced components; exact quantities appear in the Architect panel and upgrade tooltip. Medieval electrical machinery requires a power supply even though its research is medieval. Research does not provide a generator.
+
+**Full digitization**, the second Archotech research, unlocks an optional toggle in Herd boosts: all nutrition consumption becomes zero and the controller's entire power requirement becomes **10×** its non-digitized value. Disable it to resume feeding. Losing the Archotech controller suspends digitization until another is available.
+
+## Boosts and costs
+
+Select any barn → **Herd boosts**, or open the controls from the herd manager. Set three independent multipliers: product output, breeding/conception rate, and pregnancy speed. Each can target all herds, every cohort of a species, or a selected cohort. Extras above 1× add across the scopes, then clamp to the current tier's cap. For example, global 2× + species 3× + cohort 4× requests 7×, rather than multiplying to 24×. Requests survive a tier loss and take effect again when the appropriate controller returns.
+
+All barns still share **one herd pool per map**. The highest-tier barn (lowest thing ID breaks ties) is the controller for every species and cohort; other powered barns consume their tier's idle power. Cohorts are not assigned to individual buildings. Build more barns for extra hauling/output endpoints, not free boost stacking.
+
+Let `E` be the sum of the three effective extras above 1×, and `S = E + 0.1 E²`. Daily feed is baseline cohort nutrition × `(1 + feed coefficient × S)`. Active power is controller idle + sum of baseline cohort nutrition/day × the tier's W coefficient × `(1 + S)`. Thus every boosted stat has a real ongoing cost and extreme settings become very expensive. Archotech has no extra nutrition premium, but still requires baseline food until digitized. A neolithic herd at output 2× and other stats 1× consumes **3.2× baseline feed** and no power.
+
+Powered-controller outages pause production, conception, gestation, and feeding; animals remain stored and aging continues. There is no automatic fallback to a lower-tier barn to avoid a power bill. Feed shortages proportionally slow production and reproduction without starvation deaths. The manager shows demand at full operation; the boost dialog also identifies outages.
+
+Cohort tuning follows mothers through conception, gestation, and delivery, and stays distinct when otherwise similar cohorts merge. Newborns and newly stored physical animals start with neutral cohort tuning and inherit global/species settings. Cohorts age normally; pregnancy acceleration does not accelerate aging.
+
+## Upgrading safely
+
+The old barn operates while builders haul materials and construct its replacement. Construction work and delivered materials persist in saves. **Cancel barn upgrade** returns delivered materials near the building; if space is blocked, clear it and retry. Completion swaps to the next barn in one transaction and transfers food and the food filter without releasing or reabsorbing animals. The new footprint must remain clear throughout construction; power conduits are allowed underneath.
+
+Ordinary placement over an existing barn is rejected with guidance to use its upgrade command. The original **2×2** barn remains hidden in the build menu so existing saves can load it; upgrading it to the pasture barn requires room for the new 4×4 footprint. Removing the last barn normally still releases stored animals. Destroying an upgrading barn drops food/materials and follows that same release rule.
+
+## Herd simulation
+
+The herd manager sets per-species storage limits: total, adult male/female, young male/female, and pregnant. `-1` is unlimited. Lowering a limit releases oldest cohorts first. Bonded animals and animals unavailable under auto-slaughter eligibility remain physical.
+
+Intake intentionally resets individual health, surgery, genes, lineage, names, training, and identity. Released animals are fresh generic healthy pawns with approximate age/pregnancy. No hidden pawn objects are kept. Milk, wool, eggs, reproduction and old-age deaths use deterministic averages. Old-age deaths reduce stored counts **without corpses or butcher products**; release thrumbos and butcher them normally for horns. Disease and starvation deaths are not simulated.
+
+Barns hold real food in saved inventories. Haulers maintain a configurable map-wide reserve (default five herd-days, refill below 80% of target). Compatible food is consumed spoil-first. Products appear near barns; blocked outputs stay pending. Digitized herds need no reserve or hauling, although existing food remains in inventory.
+
+## Building and deployment
+
+Install the .NET 10 SDK and build against an installed RimWorld 1.7:
 
 ```bash
-dotnet build VirtualHerds.csproj
+dotnet build src/VirtualHerds/VirtualHerds.csproj -c Release -p:RimWorldInstallDir=/path/to/RimWorld
 ```
 
-The assembly is written to `1.6/Assemblies`. The barn texture is `Textures/Things/Building/VirtualHerds_Barn.png`.
+The default install path is `$HOME/.local/share/Steam/steamapps/common/RimWorld`. The default output is `1.7/Assemblies`; game dependencies are not copied. `LoadFolders.xml` selects the matching assembly directory. An optional legacy `-p:RimWorldVersion=1.6` build remains available against cached/downloaded Krafs 1.6 references, but gameplay validation focuses on 1.7.
 
-## v1 behavior
-
-Build the unpowered, no-research, no-component, genuinely stuffable 2x2 virtual herd barn from the Miscellaneous tab. It accepts Metallic, Woody, and Stony stuff (`costStuffCount` 160); it has no power requirement. All barns on a map share one state. The manager sets per-species maximum stored counts for total, adult male, young male, adult female, young female, and pregnant cohorts. `-1` means infinity, pregnant is disjoint from adult female but counts toward total, and category limits are applied before total limits. The UI reports stored, materialized, and exempt animals; real materialized/exempt pawns do not consume virtual storage slots.
-
-Eligible intake follows RimWorld's auto-slaughter availability rules and excludes animals with a direct bond relation, matching auto-slaughter when bonded animals are not allowed. Names, training, quest tags, and ordinary held state do not independently block intake. Intake is transactional and destroys the original pawn only after its cohort has been accepted. Cohorts retain only def, sex, life-stage, 16-bin age progress, 16-bin gestation progress, and fractional accumulators; no pawn objects are hidden. Intake and release intentionally normalize health, surgery, genes, lineage, and individual state. Released animals are freshly generated generic healthy, untrained, unnamed pawns with approximate age and pregnancy progress.
-
-Each barn has a persisted `IThingHolder` food inventory and `ThingFilter`. A hauling work giver maintains a pooled reserve measured in herd-days, default five. Refill starts below 80% of the configured reserve and stops when the full target is reached. Actual compatible nutrition is consumed spoil-first and shortages scale production/reproduction without causing starvation deaths. Milk, wool, eggs, live pregnancy, gestation, litter size, and sex split use deterministic definition-driven averages. Product placement is attempted at all barn endpoints and blocked output remains pending.
-
-## Deliberate v1 reductions and safe API boundaries
-
-The implementation uses public RimWorld 1.6 APIs and narrow mod-owned notifications rather than broad value/needs/damage Harmony patches. Trade, slaughter, caravans, quests, cross-species caps, species allocation, immersive intake/release jobs, finite capacity, identity/health/genetic preservation, disease mortality, and starvation mortality remain intentionally deferred. Definition-driven old-age mortality is represented by a deterministic life-expectancy curve over age bins; exact vanilla per-pawn health/mortality state is not preserved.
-
-The public RimWorld 1.6 settlement-abandon entrypoint is narrowly patched to show the stored-animal count and require confirmation before continuing into vanilla's normal abandonment checks. Each barn also exposes an explicit confirmation-gated discard action. Removing the last barn releases stored cohorts near that barn; removing one of several barns keeps the pooled state. If another mod bypasses the normal abandonment entrypoint, map cleanup still clears stored cohorts because no safe release map remains.
-
-## Verification
-
-`src/VirtualHerds.Tests` is a dependency-free executable containing deterministic integer-conservation, gender-mapping, limit, remainder, feed-ratio, and fair-allocation tests. Run it with:
+`./build-and-deploy.sh` explicitly builds and copies the common XML/art payload and selected assemblies to the installed mod directory. Override `RIMWORLD_MOD_DIR`, `RIMWORLD_INSTALL_DIR`, or `RIMWORLD_VERSION` as needed. Ordinary `dotnet build` does not deploy.
 
 ```bash
 dotnet run --project src/VirtualHerds.Tests/VirtualHerds.Tests.csproj
 ```
 
-In-game checklist: start a test colony with non-bonded animals available under RimWorld's auto-slaughter rules, including animals with generated names and training; build two barns; verify manager counts and shared limits; haul compatible food into either barn; lower a category/total limit and verify oldest-first release; raise it and verify intake; block product cells and verify pending output later places; remove one barn, then the last barn; confirm the discard action; save/reload and verify cohorts, limits, food, and pending output persist.
+The dependency-free tests cover count/remainder/feed allocation and progression costs, additive caps, invalid settings, scaling, Archotech baseline food, and digitization. See `docs/validation.md` for actual in-game verification and its limits. New barn textures and generation prompts are recorded in `docs/art-prompts.md`.

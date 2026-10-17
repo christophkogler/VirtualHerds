@@ -1,0 +1,8 @@
+<Defs>
+  <JobDef>
+    <defName>VirtualHerds_UpgradeBarn</defName>
+    <driverClass>VirtualHerds.JobDriver_UpgradeVirtualBarn</driverClass>
+    <reportString>upgrading TargetA.</reportString>
+    <casualInterruptible>true</casualInterruptible>
+  </JobDef>
+</Defs>

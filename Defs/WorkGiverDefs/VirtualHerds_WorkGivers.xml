@@ -10,4 +10,15 @@
     <priorityInType>90</priorityInType>
     <scanThings>true</scanThings>
   </WorkGiverDef>
+  <WorkGiverDef>
+    <defName>VirtualHerds_UpgradeBarn</defName>
+    <label>upgrade herd barn</label>
+    <giverClass>VirtualHerds.WorkGiver_UpgradeVirtualBarn</giverClass>
+    <workType>Construction</workType>
+    <verb>upgrade barn</verb>
+    <gerund>upgrading barn</gerund>
+    <priorityInType>110</priorityInType>
+    <scanThings>true</scanThings>
+    <requiredCapacities><li>Manipulation</li></requiredCapacities>
+  </WorkGiverDef>
 </Defs>

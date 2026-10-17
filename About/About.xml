@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ModMetaData>
-  <name>Virtual Herds</name>
+  <name>Factory Herds</name>
   <packageId>christoph.virtualherds</packageId>
   <author>OpenAI Codex</author>
   <description>Pool eligible player-owned livestock into map-wide virtual herds. Virtual Herds intentionally normalizes individual identity, health, surgery, genes, and lineage when animals enter storage.</description>
   <supportedVersions>
     <li>1.6</li>
+    <li>1.7</li>
   </supportedVersions>
   <modDependencies>
     <li>

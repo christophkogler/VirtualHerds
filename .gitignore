@@ -3,3 +3,5 @@ src/**/obj/
 
 .serena/
 .autonomous-improver/
+
+1.7/Assemblies/*.deps.json
