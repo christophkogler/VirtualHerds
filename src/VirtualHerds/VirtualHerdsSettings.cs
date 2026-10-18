@@ -13,6 +13,7 @@ namespace VirtualHerds
         public List<string> DisabledAnimalDefs = new List<string>();
         public BalanceTuning Tuning { get; private set; } = new BalanceTuning();
         private Dictionary<string, float> savedValues;
+        private int powerDefaultsVersion = BalanceTuning.PowerDefaultsVersion;
         private BalanceTuning draft;
         private readonly Dictionary<string, string> buffers = new Dictionary<string, string>();
         private readonly string[] groups = { "Simulation", "Feeding", "Power", "Tiers", "Economy", "Advanced", "Species" };
@@ -24,10 +25,12 @@ namespace VirtualHerds
             Scribe_Collections.Look(ref DisabledAnimalDefs, "disabledAnimalDefs", LookMode.Value);
             if (Scribe.mode == LoadSaveMode.Saving) savedValues = Tuning.Export();
             Scribe_Collections.Look(ref savedValues, "balanceValues", LookMode.Value, LookMode.Value);
+            Scribe_Values.Look(ref powerDefaultsVersion, "powerDefaultsVersion", 0);
             if (Scribe.mode == LoadSaveMode.PostLoadInit)
             {
                 DisabledAnimalDefs = DisabledAnimalDefs ?? new List<string>();
-                Tuning = new BalanceTuning(savedValues);
+                Tuning = BalanceTuning.Load(savedValues, powerDefaultsVersion);
+                powerDefaultsVersion = BalanceTuning.PowerDefaultsVersion;
                 draft = null;
             }
         }

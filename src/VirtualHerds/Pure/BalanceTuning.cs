@@ -22,6 +22,7 @@ namespace VirtualHerds.Pure
     // Shared by the settings UI, persistence and the simulation; no game dependencies.
     public sealed class BalanceTuning
     {
+        public const int PowerDefaultsVersion = 1;
         public static readonly string[] TierNames = { "Neolithic", "Medieval", "Industrial", "Spacer", "Ultra", "Archotech" };
         public static readonly IReadOnlyList<TuningOption> Options = BuildOptions();
         private static readonly Dictionary<string, TuningOption> ByKey = Options.ToDictionary(o => o.Key);
@@ -31,6 +32,21 @@ namespace VirtualHerds.Pure
         {
             foreach (var option in Options)
                 values[option.Key] = saved != null && saved.TryGetValue(option.Key, out var value) ? option.Validate(value) : option.Default;
+        }
+        public static BalanceTuning Load(IDictionary<string, float> saved, int powerDefaultsVersion)
+        {
+            var result = new BalanceTuning(saved);
+            if (saved == null || powerDefaultsVersion >= PowerDefaultsVersion) return result;
+            var oldIdle = new[] { 0f, 100f, 500f, 1500f, 5000f, 15000f };
+            var oldEnergy = new[] { 0f, 50f, 150f, 400f, 1000f, 2500f };
+            for (int tier = 1; tier <= 5; tier++)
+            {
+                string idle = "idle" + tier, energy = "energy" + tier;
+                // Upgrade only persisted legacy defaults; leave independently customized values alone.
+                if (saved.TryGetValue(idle, out var watts) && watts == oldIdle[tier]) result[idle] = ByKey[idle].Default;
+                if (saved.TryGetValue(energy, out var coefficient) && coefficient == oldEnergy[tier]) result[energy] = ByKey[energy].Default;
+            }
+            return result;
         }
         public float this[string key]
         {
@@ -74,8 +90,8 @@ namespace VirtualHerds.Pure
             add("digitalFeed", "Power", "Digitization feed fraction", "Fraction of normal feed demand retained while digitized. Default 0 makes digitization food-free.", 0, 0, 1);
             var caps = new[] { 2f, 3f, 6f, 12f, 25f, 100f };
             var feed = new[] { 2f, 1.5f, 1f, 0.5f, 0.2f, 0f };
-            var idle = new[] { 0f, 100f, 500f, 1500f, 5000f, 15000f };
-            var energy = new[] { 0f, 50f, 150f, 400f, 1000f, 2500f };
+            var idle = new[] { 0f, 100f, 100f, 100f, 100f, 100f };
+            var energy = new[] { 0f, 50f, 40f, 30f, 20f, 10f };
             for (var tier = 0; tier < 6; tier++)
             {
                 string name = TierNames[tier];
