@@ -33,6 +33,7 @@ static class Program
         Assert(noFood[0] == 0f && noFood[1] == 0f, "zero nutrition allocation");
         CheckBoostCosts();
         CheckRuntimeTuning();
+        CheckPowerMigration();
         System.Console.WriteLine("Virtual Herds pure self-tests passed.");
     }
 
@@ -55,7 +56,19 @@ static class Program
         for (var tier = 1; tier < 6; tier++)
         {
             Assert(BoostMath.NutritionFactor(tier, 2f, 2f, 2f, false) < BoostMath.NutritionFactor(tier - 1, 2f, 2f, 2f, false), "successive tiers substitute energy for feed " + tier);
-            Assert(BoostMath.LoadWatts(tier, 10f, 2f, 2f, 2f, false) > BoostMath.LoadWatts(tier - 1, 10f, 2f, 2f, 2f, false), "energy cost rises with tier " + tier);
+            if (tier > 1)
+            {
+                foreach (float demand in new[] { 0f, 1f, 125f, 1000f })
+                    foreach (float boost in new[] { 1f, 2f, 3f })
+                    {
+                        float previous = BoostMath.IdleWatts(tier - 1) + BoostMath.LoadWatts(tier - 1, demand, boost, boost, boost, false);
+                        float current = BoostMath.IdleWatts(tier) + BoostMath.LoadWatts(tier, demand, boost, boost, boost, false);
+                        Assert(current <= previous, "same herd and boosts never cost more at a higher powered tier " + tier);
+                        if (demand > 0) Assert(current < previous, "higher powered tier is more efficient per animal " + tier);
+                    }
+                float cap = BoostMath.Cap(tier), previousCap = BoostMath.Cap(tier - 1);
+                Assert(BoostMath.LoadWatts(tier, 125, cap, cap, cap, false) > BoostMath.LoadWatts(tier - 1, 125, previousCap, previousCap, previousCap, false), "expanded boost range permits larger maximum load " + tier);
+            }
         }
         Assert(BoostMath.NutritionFactor(5, 100f, 100f, 100f, false) == 1f, "archotech boosts retain only baseline nutrition");
         Assert(BoostMath.NutritionFactor(5, 100f, 100f, 100f, true) == 0f, "digitized herds use no feed at maximum boosts");
@@ -124,14 +137,38 @@ static class Program
         // Two cohorts with unequal count/diet/boosts: nutrition-weighted cost average reconciles exactly.
         float a = 20, b = 5;
         float sa = 1 + BoostMath.Severity(2, 1, 1), sb = 1 + BoostMath.Severity(1, 3, 1);
-        var power = new PowerCostBreakdown { AnimalCount = 15, BaselineNutrition = a + b, TierCoefficient = BoostMath.EnergyCoefficient(5), ActiveScale = 1, IdleScale = 1, ControllerIdleBase = 15000, BoostMultiplier = (a * sa + b * sb) / (a + b), DigitalMultiplier = 10, SecondaryIdleWatts = 100 };
-        float expected = (15000 + BoostMath.LoadWatts(5, a, 2, 1, 1, false) + BoostMath.LoadWatts(5, b, 1, 3, 1, false)) * 10;
+        var power = new PowerCostBreakdown { AnimalCount = 15, BaselineNutrition = a + b, TierCoefficient = BoostMath.EnergyCoefficient(5), ActiveScale = 1, IdleScale = 1, ControllerIdleBase = BoostMath.IdleWatts(5), BoostMultiplier = (a * sa + b * sb) / (a + b), DigitalMultiplier = 10, SecondaryIdleWatts = 100 };
+        float expected = (BoostMath.IdleWatts(5) + BoostMath.LoadWatts(5, a, 2, 1, 1, false) + BoostMath.LoadWatts(5, b, 1, 3, 1, false)) * 10;
         Assert(Math.Abs(power.ControllerWatts - expected) < 0.1f && power.TotalWatts == power.ControllerWatts + 100, "breakdown weighted average matches actual cohort costs and includes secondary idle");
         Assert(new PowerCostBreakdown().AverageNutrition == 0, "empty herd breakdown has no division by zero");
         float hugeRemainder = 0;
         Assert(HerdMath.ConsumeWhole(ref hugeRemainder, 1e30f) == int.MaxValue && hugeRemainder == 0, "extreme configured output cannot overflow into negatives");
         Assert(HerdMath.AddCounts(int.MaxValue, 10) == int.MaxValue, "count buffers saturate rather than wrap");
         BalanceTuning.Current = new BalanceTuning();
+    }
+
+    private static void CheckPowerMigration()
+    {
+        var saved = new BalanceTuning().Export();
+        float[] idle = { 0, 100, 500, 1500, 5000, 15000 }, energy = { 0, 50, 150, 400, 1000, 2500 };
+        for (int tier = 1; tier <= 5; tier++) { saved["idle" + tier] = idle[tier]; saved["energy" + tier] = energy[tier]; }
+        saved["production"] = 3;
+        var migrated = BalanceTuning.Load(saved, 0);
+        var defaults = new BalanceTuning();
+        for (int tier = 1; tier <= 5; tier++)
+        {
+            Assert(migrated["idle" + tier] == defaults["idle" + tier] && migrated["energy" + tier] == defaults["energy" + tier], "legacy defaults migrate " + tier);
+        }
+        Assert(migrated["production"] == 3, "unrelated tuning survives power migration");
+        saved["energy4"] = 777; saved["idle3"] = 900;
+        migrated = BalanceTuning.Load(saved, 0);
+        Assert(migrated["energy4"] == 777 && migrated["idle3"] == 900, "custom power values preserved independently");
+        var modern = BalanceTuning.Load(saved, BalanceTuning.PowerDefaultsVersion);
+        Assert(modern["energy5"] == 2500 && modern["idle5"] == 15000, "versioned settings are never migrated again even when matching legacy numbers");
+        Assert(BalanceTuning.Load(null, 0)["energy4"] == 20, "missing settings use efficient defaults");
+        BalanceTuning.Current = new BalanceTuning();
+        Assert(BoostMath.IdleWatts(3) + BoostMath.LoadWatts(3, 125, 1, 1, 1, false) == 3850, "Spacer unboosted example");
+        Assert(BoostMath.IdleWatts(4) + BoostMath.LoadWatts(4, 125, 1, 1, 1, false) == 2600, "Ultra unboosted example");
     }
 
     private static void Assert(bool condition, string message)

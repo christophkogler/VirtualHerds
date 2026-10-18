@@ -88,7 +88,7 @@
     <researchPrerequisites><li>VirtualHerds_IntensiveHusbandry</li></researchPrerequisites>
     <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
     <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>2</tier><nextBarnDefName>VirtualHerds_SpacerBarn</nextBarnDefName></li></modExtensions>
-    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>500</basePowerConsumption></li></comps>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>100</basePowerConsumption></li></comps>
   </ThingDef>
   <ThingDef ParentName="BuildingBase">
     <defName>VirtualHerds_SpacerBarn</defName>
@@ -107,7 +107,7 @@
     <researchPrerequisites><li>VirtualHerds_AcceleratedBioculture</li></researchPrerequisites>
     <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
     <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>3</tier><nextBarnDefName>VirtualHerds_UltraBarn</nextBarnDefName></li></modExtensions>
-    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>1500</basePowerConsumption></li></comps>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>100</basePowerConsumption></li></comps>
   </ThingDef>
   <ThingDef ParentName="BuildingBase">
     <defName>VirtualHerds_UltraBarn</defName>
@@ -126,7 +126,7 @@
     <researchPrerequisites><li>VirtualHerds_SyntheticEcosystems</li></researchPrerequisites>
     <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
     <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>4</tier><nextBarnDefName>VirtualHerds_ArchotechBarn</nextBarnDefName></li></modExtensions>
-    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>5000</basePowerConsumption></li></comps>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>100</basePowerConsumption></li></comps>
   </ThingDef>
   <ThingDef ParentName="BuildingBase">
     <defName>VirtualHerds_ArchotechBarn</defName>
@@ -145,6 +145,6 @@
     <researchPrerequisites><li>VirtualHerds_VirtualHerds</li></researchPrerequisites>
     <placeWorkers><li>VirtualHerds.PlaceWorker_VirtualBarn</li></placeWorkers>
     <modExtensions><li Class="VirtualHerds.BarnTierExtension"><tier>5</tier></li></modExtensions>
-    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>15000</basePowerConsumption></li></comps>
+    <comps><li Class="CompProperties_Power"><compClass>CompPowerTrader</compClass><basePowerConsumption>100</basePowerConsumption></li></comps>
   </ThingDef>
 </Defs>

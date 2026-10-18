@@ -10,10 +10,10 @@ Research the seven projects in the **Factory farming** tab. Each of the first si
 |---|---|---|---:|---:|---:|---:|
 | Neolithic | Pastoralism | Pasture barn | 2× | 0 | 2 | 0 |
 | Medieval | Managed husbandry | Managed herd barn | 3× | 100 | 1.5 | 50 |
-| Industrial | Intensive husbandry | Industrial livestock facility | 6× | 500 | 1 | 150 |
-| Spacer | Accelerated bioculture | Spacer bioculture facility | 12× | 1,500 | 0.5 | 400 |
-| Ultra | Synthetic ecosystems | Ultratech herd foundry | 25× | 5,000 | 0.2 | 1,000 |
-| Archotech | Virtual herds | Archotech herd nexus | 100× | 15,000 | 0 | 2,500 |
+| Industrial | Intensive husbandry | Industrial livestock facility | 6× | 100 | 1 | 40 |
+| Spacer | Accelerated bioculture | Spacer bioculture facility | 12× | 100 | 0.5 | 30 |
+| Ultra | Synthetic ecosystems | Ultratech herd foundry | 25× | 100 | 0.2 | 20 |
+| Archotech | Virtual herds | Archotech herd nexus | 100× | 100 | 0 | 10 |
 
 Every tier requires the full building resource cost and construction work, including upgrades. Later facilities require steel, plasteel, uranium, gold, industrial components, and advanced components; exact quantities appear in the Architect panel and upgrade tooltip. Medieval electrical machinery requires a power supply even though its research is medieval. Research does not provide a generator.
 
@@ -25,7 +25,7 @@ Select any barn → **Herd boosts**, or open the controls from the herd manager.
 
 All barns still share **one herd pool per map**. The highest-tier barn (lowest thing ID breaks ties) is the controller for every species and cohort; other powered barns consume their tier's idle power. Cohorts are not assigned to individual buildings. Build more barns for extra hauling/output endpoints, not free boost stacking.
 
-Let `E` be the sum of the three effective extras above 1×, and `S = E + 0.1 E²`. Daily feed is baseline cohort nutrition × `(1 + feed coefficient × S)`. Active power is controller idle + sum of baseline cohort nutrition/day × the tier's W coefficient × `(1 + S)`. Thus every boosted stat has a real ongoing cost and extreme settings become very expensive. Archotech has no extra nutrition premium, but still requires baseline food until digitized. A neolithic herd at output 2× and other stats 1× consumes **3.2× baseline feed** and no power.
+Let `E` be the sum of the three effective extras above 1×, and `S = E + 0.1 E²`. Daily feed is baseline cohort nutrition × `(1 + feed coefficient × S)`. Active power is controller idle + sum of baseline cohort nutrition/day × the tier's W coefficient × `(1 + S)`. Powered tiers share 100 W idle draw and become more efficient per animal: their operating coefficients fall from 50 to 40, 30, 20 and 10. At the same effective boosts, upgrading reduces power; the wider boost ranges create the large high-tier loads. Every boosted stat has a real ongoing cost and extreme settings become very expensive. Archotech has no extra nutrition premium, but still requires baseline food until digitized. A neolithic herd at output 2× and other stats 1× consumes **3.2× baseline feed** and no power.
 
 Powered-controller outages pause production, conception, gestation, and feeding; animals remain stored and aging continues. There is no automatic fallback to a lower-tier barn to avoid a power bill. Feed shortages proportionally slow production and reproduction without starvation deaths. The manager shows demand at full operation; the boost dialog also identifies outages.
 
@@ -51,7 +51,7 @@ Barns hold real food in saved inventories. Haulers maintain a configurable map-w
 
 Open **Options → Mod settings → Factory Herds**, or **Herd boosts → Mod settings**. There are 70 numeric controls, grouped into Simulation, Feeding, Power, Tiers, Economy and Advanced, plus the existing species switches. Search finds matching balance controls across sections. Numeric fields allow exact values; sliders use logarithmic travel so small multipliers remain easy to set. Each control shows its default, range and explanation. Reset a single value, the current section, or all balance values; **Apply & save** commits edits, while **Discard edits** restores the applied values. Resets do not change species switches.
 
-Settings are global to this installation and affect every loaded map and future saves. Power and previews refresh on Apply; production, reproduction, aging and feeding use the new settings at the next simulated herd hour. Species switches apply directly and disabling a species releases its stored animals on reconciliation. The default values retain the original balance described above.
+Settings are global to this installation and affect every loaded map and future saves. Power and previews refresh on Apply; production, reproduction, aging and feeding use the new settings at the next simulated herd hour. Species switches apply directly and disabling a species releases its stored animals on reconciliation. The default values use the balance described above. On the first load after the power-efficiency update, saved idle/operating values that exactly match the old defaults migrate to the new defaults; custom values are preserved. The migration is versioned so later edits are not repeatedly reset. Neolithic remains unpowered, and optional digitization still adds its explicit energy multiplier.
 
 | Section | Controls |
 |---|---|
