@@ -42,7 +42,7 @@ namespace VirtualHerds
         private static Thing FindMaterial(Pawn pawn, Building_VirtualBarn barn, bool forced)
         {
             return GenClosest.ClosestThingReachable(pawn.Position, pawn.Map, ThingRequest.ForGroup(ThingRequestGroup.HaulableEver),
-                PathEndMode.ClosestTouch, TraverseParms.For(pawn), 9999f,
+                PathEndMode.ClosestTouch, TraverseParms.For(pawn), VirtualHerds.Pure.BalanceTuning.Current["haulRadius"],
                 t => barn.MissingUpgradeMaterial(t.def) > 0 && !t.IsForbidden(pawn) && pawn.CanReserve(t, 1, -1, null, forced));
         }
     }

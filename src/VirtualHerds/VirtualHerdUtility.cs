@@ -169,8 +169,8 @@ namespace VirtualHerds
                 stageFactor = def.race.lifeStageAges[index].def.hungerRateFactor;
             }
             // Need_Food's unmodified Fed-category fall rate is baseHungerRate *
-            // lifeStageFactor * 1.6 nutrition per 60-day RimWorld year.
-            return Math.Max(0.01f, def.race.baseHungerRate * stageFactor * 1.6f);
+            // lifeStageFactor * 1.6 by default; the baseline conversion is tunable.
+            return BoostMath.BaselineNutrition(def.race.baseHungerRate, stageFactor);
         }
 
         public static CompProperties_Milkable Milkable(ThingDef def)

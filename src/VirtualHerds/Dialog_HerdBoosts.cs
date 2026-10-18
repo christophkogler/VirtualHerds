@@ -3,6 +3,7 @@ using System.Linq;
 using RimWorld;
 using UnityEngine;
 using Verse;
+using VirtualHerds.Pure;
 
 namespace VirtualHerds
 {
@@ -51,11 +52,13 @@ namespace VirtualHerds
                 " /day" + (component.PowerReady ? " at full operation" : " (currently paused)") +
                 "   |   Stored: " + component.FoodNutrition.ToString("0.##"));
 
+            if (Widgets.ButtonText(new Rect(rect.width - 170f, 106f, 170f, 28f), "Power breakdown"))
+                Find.WindowStack.Add(new Dialog_HerdPower(component));
             var digitized = component.Digitized;
             if (component.CanDigitize || digitized)
             {
                 Widgets.CheckboxLabeled(new Rect(0f, 166f, rect.width, 26f),
-                    "Fully digitized: replace all nutrition with power; multiplies the total energy load by 10", ref digitized);
+                    "Digitized: feed fraction " + BalanceTuning.Current["digitalFeed"].ToString("P0") + "; controller power ×" + BalanceTuning.Current["digitalPower"].ToString("0.##"), ref digitized);
                 if (digitized != component.Digitized) component.SetDigitized(digitized);
             }
             else
@@ -66,6 +69,8 @@ namespace VirtualHerds
                 if (Widgets.ButtonText(new Rect(i * 210f, 204f, 200f, 30f), (scope == i ? "• " : "") + scopes[i]))
                 { scope = i; scroll = Vector2.zero; }
 
+            if (Widgets.ButtonText(new Rect(rect.width - 170f, 204f, 170f, 30f), "Mod settings"))
+                Find.WindowStack.Add(new Dialog_HerdSettings());
             if (scope > 0 && species != null && Widgets.ButtonText(new Rect(0f, 244f, rect.width, 30f), "Species: " + species.LabelCap))
                 Find.WindowStack.Add(new FloatMenu(speciesList.Select(d => new FloatMenuOption(d.LabelCap, () =>
                 { species = d; selected = null; scroll = Vector2.zero; })).ToList()));
@@ -121,7 +126,7 @@ namespace VirtualHerds
         private static bool Slider(float x, ref float y, float width, string label, ref float value, float max)
         {
             var previous = value;
-            value = float.IsNaN(value) || float.IsInfinity(value) ? 1f : Mathf.Clamp(value, 1f, 100f);
+            value = float.IsNaN(value) || float.IsInfinity(value) ? 1f : Mathf.Clamp(value, 1f, BoostMath.RequestCeiling);
             Widgets.Label(new Rect(x, y, width, 24f), label + ": requested " + value.ToString("0.##") + "x");
             var visibleValue = Mathf.Min(value, max);
             var edited = (float)Math.Round(Widgets.HorizontalSlider(new Rect(x, y + 25f, width - 8f, 22f), visibleValue, 1f, max), 2);

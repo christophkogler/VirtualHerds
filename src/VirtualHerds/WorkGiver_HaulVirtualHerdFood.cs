@@ -35,7 +35,7 @@ namespace VirtualHerds
                 return null;
             return GenClosest.ClosestThingReachable(pawn.Position, pawn.Map,
                 ThingRequest.ForGroup(ThingRequestGroup.HaulableEver), PathEndMode.ClosestTouch,
-                TraverseParms.For(pawn), 9999f,
+                TraverseParms.For(pawn), VirtualHerds.Pure.BalanceTuning.Current["haulRadius"],
                 food => VirtualHerdUtility.IsCompatibleFood(food) && !food.IsForbidden(pawn)
                     && barn.FoodFilter.Allows(food)
                     && pawn.Map.GetComponent<VirtualHerdMapComponent>().FoodCompatibleWithStoredSpecies(food.def)
